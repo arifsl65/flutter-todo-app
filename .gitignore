@@ -1,0 +1,24 @@
+# Flutter
+todo_app/build/
+todo_app/.dart_tool/
+todo_app/.packages
+todo_app/.flutter-plugins
+todo_app/.flutter-plugins-dependencies
+todo_app/pubspec.lock
+
+# Android
+todo_app/android/.gradle/
+todo_app/android/local.properties
+todo_app/android/*.iml
+
+# iOS
+todo_app/ios/Pods/
+todo_app/ios/.symlinks/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Go
+go_backend/todo-backend
