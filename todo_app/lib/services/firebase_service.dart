@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/todo.dart';
+import 'todo_service.dart';
 
-class FirebaseService {
+class FirebaseService implements TodoService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collection = 'todos';
 
-  // Get all todos as a stream (real-time updates)
+  @override
   Stream<List<Todo>> getTodos() {
     return _firestore
         .collection(_collection)
@@ -18,7 +19,7 @@ class FirebaseService {
     });
   }
 
-  // Add a new todo
+  @override
   Future<void> addTodo(String title) async {
     await _firestore.collection(_collection).add({
       'title': title,
@@ -27,21 +28,21 @@ class FirebaseService {
     });
   }
 
-  // Toggle todo completion status
+  @override
   Future<void> toggleTodo(String id, bool completed) async {
     await _firestore.collection(_collection).doc(id).update({
       'completed': completed,
     });
   }
 
-  // Update todo title
+  @override
   Future<void> updateTodo(String id, String title) async {
     await _firestore.collection(_collection).doc(id).update({
       'title': title,
     });
   }
 
-  // Delete a todo
+  @override
   Future<void> deleteTodo(String id) async {
     await _firestore.collection(_collection).doc(id).delete();
   }

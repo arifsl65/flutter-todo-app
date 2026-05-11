@@ -1,22 +1,31 @@
 import 'package:flutter/material.dart';
 import '../models/todo.dart';
+import '../services/todo_service.dart';
 import '../services/firebase_service.dart';
 
 class TodoScreen extends StatefulWidget {
-  const TodoScreen({super.key});
+  final TodoService? service;
+
+  const TodoScreen({super.key, this.service});
 
   @override
   State<TodoScreen> createState() => _TodoScreenState();
 }
 
 class _TodoScreenState extends State<TodoScreen> {
-  final FirebaseService _firebaseService = FirebaseService();
+  late final TodoService _todoService;
   final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _todoService = widget.service ?? FirebaseService();
+  }
 
   void _addTodo() {
     final title = _controller.text.trim();
     if (title.isNotEmpty) {
-      _firebaseService.addTodo(title);
+      _todoService.addTodo(title);
       _controller.clear();
     }
   }
@@ -44,7 +53,7 @@ class _TodoScreenState extends State<TodoScreen> {
             onPressed: () {
               final newTitle = editController.text.trim();
               if (newTitle.isNotEmpty) {
-                _firebaseService.updateTodo(todo.id, newTitle);
+                _todoService.updateTodo(todo.id, newTitle);
               }
               Navigator.pop(context);
             },
@@ -97,7 +106,7 @@ class _TodoScreenState extends State<TodoScreen> {
           // Todo list
           Expanded(
             child: StreamBuilder<List<Todo>>(
-              stream: _firebaseService.getTodos(),
+              stream: _todoService.getTodos(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -134,12 +143,12 @@ class _TodoScreenState extends State<TodoScreen> {
                         child: const Icon(Icons.delete, color: Colors.white),
                       ),
                       direction: DismissDirection.endToStart,
-                      onDismissed: (_) => _firebaseService.deleteTodo(todo.id),
+                      onDismissed: (_) => _todoService.deleteTodo(todo.id),
                       child: ListTile(
                         leading: Checkbox(
                           value: todo.completed,
                           onChanged: (value) {
-                            _firebaseService.toggleTodo(todo.id, value ?? false);
+                            _todoService.toggleTodo(todo.id, value ?? false);
                           },
                         ),
                         title: Text(

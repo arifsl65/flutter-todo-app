@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
 import 'package:todo_app/screens/todo_screen.dart';
-import '../integration_test/mock_todo_service.dart';
+import 'mock_todo_service.dart';
 
 void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
   late MockTodoService mockService;
 
   setUp(() {
@@ -20,11 +23,11 @@ void main() {
     );
   }
 
-  group('TodoScreen Widget Tests', () {
+  group('Todo App Integration Tests', () {
     testWidgets('shows empty state when no todos exist', (tester) async {
       await tester.pumpWidget(createTestApp());
-      await tester.pump(); // Process microtask that emits stream
-      await tester.pump(); // Rebuild widget with stream data
+      await tester.pump();
+      await tester.pump();
 
       expect(find.text('No todos yet!\nAdd one above.'), findsOneWidget);
     });
@@ -65,6 +68,8 @@ void main() {
       await tester.pump();
 
       final checkbox = find.byType(Checkbox);
+      expect(checkbox, findsOneWidget);
+
       await tester.tap(checkbox);
       await tester.pump();
 
@@ -126,11 +131,57 @@ void main() {
       expect(find.text('Original title'), findsNothing);
     });
 
+    testWidgets('can cancel edit dialog', (tester) async {
+      await tester.pumpWidget(createTestApp());
+      await tester.pump();
+
+      await tester.enterText(find.byType(TextField).first, 'Keep me');
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pump();
+
+      await tester.tap(find.text('Keep me'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).last, 'Changed');
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Keep me'), findsOneWidget);
+    });
+
+    testWidgets('can add multiple todos', (tester) async {
+      await tester.pumpWidget(createTestApp());
+      await tester.pump();
+
+      final todos = ['First todo', 'Second todo', 'Third todo'];
+      for (final title in todos) {
+        await tester.enterText(find.byType(TextField).first, title);
+        await tester.tap(find.byIcon(Icons.add));
+        await tester.pump();
+      }
+
+      for (final title in todos) {
+        expect(find.text(title), findsOneWidget);
+      }
+    });
+
     testWidgets('empty input does not add todo', (tester) async {
       await tester.pumpWidget(createTestApp());
       await tester.pump();
       await tester.pump();
 
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pump();
+
+      expect(find.text('No todos yet!\nAdd one above.'), findsOneWidget);
+    });
+
+    testWidgets('whitespace-only input does not add todo', (tester) async {
+      await tester.pumpWidget(createTestApp());
+      await tester.pump();
+      await tester.pump();
+
+      await tester.enterText(find.byType(TextField).first, '   ');
       await tester.tap(find.byIcon(Icons.add));
       await tester.pump();
 
